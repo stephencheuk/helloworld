@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+use Mojolicious::Lite;
+
+get '/' => sub {
+  #shift->render('text' => 'Hello!');
+  shift->render('template' => 'hello');
+};
+
+get '/:fname/:lname' => sub {
+  my $ex = 2;
+  if($ex == 1){
+    shift->render('template' => 'capture');
+  }elsif($ex == 2){
+    my $self = shift;
+    $self->stash(
+      fname => uc $self->param('fname'),
+      lname => uc $self->param('lname'),
+      y => $self->req->param('fname'),
+    );
+    $self->render('template' => 'capture2');
+  }
+
+};
+
+get '/json' => sub {
+  shift->render('json' => { '"a"' => 'b', 'c' => [1, 2,3] } );
+};
+
+get 'delay' => sub {
+  #my $c = shift;
+  #$c->render_later;
+  #Mojo::IOLoop->timer(2 => sub {
+  #  $c->render(text => 'Delayed by 2 seconds!');
+  #});
+
+  my $self = shift;
+  $self->render_later;
+  my $delay = Mojo::IOLoop->delay(sub {
+      $self->app->log->debug('Delay finished!');
+      $self->render(text => 'test!');
+  });
+  for my $i (0 .. 5) {
+      my $end = $delay->begin;
+      Mojo::IOLoop->timer($i => sub {
+        $self->app->log->debug($i);
+        $end->();
+      });
+  }
+};
+
+get '/*wild' => sub {
+  my $self = shift;
+  $self->render('text' => $self->param('wild') )
+};
+
+app->start;
+
+__DATA__
+
+@@ layouts/wrapper.html.ep
+<h1><%= title %></h1>
+<p>START</p>
+<%= content %>
+<p>END</p>
+
+@@ hello.html.ep
+Hello, it is a template!
+
+@@ capture.html.ep
+Hello, <%= param('fname') %> <%= param('lname') %>
+
+@@ capture2.html.ep
+% title 'title here';
+% layout 'wrapper';
+Hello, <%= $fname %> <%= $lname %>, <%= $y  %>
