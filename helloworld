@@ -16,6 +16,7 @@ get '/:fname/:lname' => sub {
       fname => uc $self->param('fname'),
       lname => uc $self->param('lname'),
       y => $self->req->param('fname'),
+      x => $self->req->param('lname'),
     );
     $self->render('template' => 'capture2');
   }
@@ -23,16 +24,10 @@ get '/:fname/:lname' => sub {
 };
 
 get '/json' => sub {
-  shift->render('json' => { '"a"' => 'b', 'c' => [1, 2,3] } );
+  shift->render('json' => { 'a' => 'b', 'c' => [1, 2, 3] } );
 };
 
 get 'delay' => sub {
-  #my $c = shift;
-  #$c->render_later;
-  #Mojo::IOLoop->timer(2 => sub {
-  #  $c->render(text => 'Delayed by 2 seconds!');
-  #});
-
   my $self = shift;
   $self->render_later;
   my $delay = Mojo::IOLoop->delay(sub {
